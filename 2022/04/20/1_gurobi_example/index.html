@@ -1,0 +1,681 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=light>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/tab_icon.png">
+  <link rel="icon" href="/img/tab_icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#181c27">
+  <meta name="author" content="Dunbang Yuan">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="The problem is provided by the course Math 728 SP22 at UW-Madison. The code is a part of my homework submission.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Simple Example of Using Gurobi to Solve An Integer Optimization Problem">
+<meta property="og:url" content="http://example.com/2022/04/20/1_gurobi_example/index.html">
+<meta property="og:site_name" content="Dunbang&#39;s Blog">
+<meta property="og:description" content="The problem is provided by the course Math 728 SP22 at UW-Madison. The code is a part of my homework submission.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://dbyuan.s3.amazonaws.com/1-1.png">
+<meta property="article:published_time" content="2022-04-20T05:00:00.000Z">
+<meta property="article:modified_time" content="2022-04-21T19:22:40.366Z">
+<meta property="article:author" content="Dunbang Yuan">
+<meta property="article:tag" content="Optimization">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://dbyuan.s3.amazonaws.com/1-1.png">
+  
+  
+  <title>A Simple Example of Using Gurobi to Solve An Integer Optimization Problem | Dunbang&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"...","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 60vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Dunbang&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archive
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Category
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tag
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('https://dbyuan.s3.amazonaws.com/background.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="A Simple Example of Using Gurobi to Solve An Integer Optimization Problem"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-04-20 00:00" pubdate>
+          April 20, 2022 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.2k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">A Simple Example of Using Gurobi to Solve An Integer Optimization Problem</h1>
+            
+            <div class="markdown-body">
+              
+              <p>The problem is provided by the course <em>Math 728 SP22</em> at UW-Madison. The code is a part of my homework submission.</p>
+<h2 id="Problem-description"><a href="#Problem-description" class="headerlink" title="Problem description"></a>Problem description</h2><p>The following is a formulation of a multiple-product lot sizing problem having \(I\) products and \(T\) time periods.</p>
+<p>\[<br>\begin{align}<br>&amp;\text{min}<br>&amp;\sum\limits_{i&#x3D;1}^{I}\sum\limits_{t&#x3D;1}^{T}h_is_{it}+\sum\limits_{i&#x3D;1}^{I}\sum\limits_{t&#x3D;1}^{T}f_iy_{it}<br>&amp;<br>&amp;\text{(1)}\\<br>&amp;\text{s.t.}<br>&amp;s_{i,t-1}+x_{it}&#x3D;D_{it}+s_{it},\quad<br>&amp;i&#x3D;1,\dots,I,t&#x3D;1,\dots,T<br>&amp;\text{(2)}\\<br>&amp;<br>&amp;s_{i0}&#x3D;SI_i,: s_{iT}&#x3D;SF,\quad<br>&amp;i&#x3D;1,\dots,I<br>&amp;\text{(3)}\\<br>&amp;<br>&amp;x_{it}\le (\sum\limits_{k&#x3D;t}^{T}D_{ik}+SF)y_{it},\quad<br>&amp;i&#x3D;1,\dots,I,t&#x3D;1,\dots,T<br>&amp;\text{(4)}\\<br>&amp;<br>&amp;\sum\limits_{i&#x3D;1}^{I}\alpha_ix_{it}+\sum\limits_{i&#x3D;1}^{I}\beta_iy_{it}\le L,\quad<br>&amp;t&#x3D;1,\dots,T<br>&amp;\text{(5)}\\<br>&amp;<br>&amp;x_{it}\ge0,s_{it}\ge0,y_{it}\in{0,1},\quad<br>&amp;i&#x3D;1,\dots,I<br>&amp;\text{(6)}<br>\end{align}<br>\]</p>
+<p>Here, the variables \(x_{it}\) represent the amount of product \(i\) to produce in period \(t\), the binary variables \(y_{it}\) will equal one when a set-up of product \(i\) occurs in period \(t\) (which is required if \(x_{it}&gt;0\)), and sit represents the inventory level of product \(i\) at time \(t\). The data for the this problem are the holding costs \(h_i\), setup costs \(f_i\), initial inventory \(SI_i\) for each product \(i\), ending inventory \(SF\) (same for all products), demand \(D_{it}\) for each product \(i\) and time period \(t\); capacity \(L\) for the machine; and required machine usage \(\alpha_i\) for each unit of product \(i\) on machine \(k\) and required machine usage \(\beta_i\) if a setup of product \(i\) is done on machine \(k\) in a period. The constraints \(\text{(1)}\) specify the inventory balance conditions and constraint \(\text{(2)}\) specifies the inititial and final inventory levels. The constraint \(\text{(3)}\) specifies that a setup must occur if production for a product type \(i\) is done. All products must be processed on a single machine. Constraints \(\text{(4)}\) are the capacity constraints for the machine. The objective is to find a feasible production plan that meets the customer demands while minimizing the inventory holding costs and setup costs. (Production costs do not need to be considered because the total amount produced over time is fixed based on the demands and ending inventory requirements.) Implement and solve the model with a MIP solver of your choice.</p>
+<h2 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> gurobipy <span class="hljs-keyword">as</span> gp<br><span class="hljs-keyword">from</span> gurobipy <span class="hljs-keyword">import</span> GRB<br><br><span class="hljs-comment">### Read data - this part is provided by the professor Jim but I modified it a little bit</span><br>f=<span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;prodplan1.txt&quot;</span>)<br><br>Istr = f.readline().split()<br>I = <span class="hljs-built_in">int</span>(Istr[<span class="hljs-number">0</span>])<br><br>Tstr = f.readline().split()<br>T = <span class="hljs-built_in">int</span>(Tstr[<span class="hljs-number">0</span>])<br><br>Iset = <span class="hljs-built_in">range</span>(I)  <span class="hljs-comment"># products</span><br>Tset = <span class="hljs-built_in">range</span>(T)   <span class="hljs-comment"># time periods </span><br><br>hcost = <span class="hljs-built_in">float</span>(f.readline().split()[<span class="hljs-number">0</span>]) <span class="hljs-comment"># h_i</span><br>sfin = <span class="hljs-built_in">float</span>(f.readline().split()[<span class="hljs-number">0</span>]) <span class="hljs-comment"># SF</span><br>cap = <span class="hljs-built_in">float</span>(f.readline().split()[<span class="hljs-number">0</span>]) <span class="hljs-comment"># L</span><br><br>dem = &#123;&#125; <span class="hljs-comment"># D_&#123;it&#125;</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset:<br>    demvals = f.readline().split()<br>    <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset:<br>        dem[i,t]=<span class="hljs-built_in">float</span>(demvals[t])<br><br>fstr=f.readline().split()<br>fcost=[<span class="hljs-built_in">float</span>(fstr[i]) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset]<br>sinitstr=f.readline().split()<br>sinit=[<span class="hljs-built_in">int</span>(sinitstr[i]) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset] <span class="hljs-comment"># SI_i</span><br>alphastr=f.readline().split()<br>alpha=[<span class="hljs-built_in">float</span>(alphastr[i]) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset] <span class="hljs-comment"># alpha_i</span><br>betastr=f.readline().split()<br>beta=[<span class="hljs-built_in">float</span>(betastr[i]) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset] <span class="hljs-comment"># beta_i</span><br><br>f.close()<br><br>fcost_for_obj = [] <span class="hljs-comment"># f_i</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> fcost:<br>    fcost_for_obj += [i]*T<br><br>M = &#123;&#125; <span class="hljs-comment"># M_&#123;it&#125;</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset:<br>    <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset:<br>        tmp = <span class="hljs-number">0</span><br>        <span class="hljs-keyword">for</span> k <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(t, T):<br>            tmp += dem[i,k]<br>        M[i,t] = tmp + sfin<br><br><span class="hljs-comment">### Create the model</span><br>m = gp.Model()<br><br><span class="hljs-comment">### Create variables</span><br>x = m.addVars([(i,t) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset], vtype=GRB.CONTINUOUS, name=<span class="hljs-string">&#x27;x&#x27;</span>)<br>s = m.addVars([(i,t) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset], obj=hcost, vtype=GRB.CONTINUOUS, name=<span class="hljs-string">&#x27;s&#x27;</span>)<br>y = m.addVars([(i,t) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset], obj=fcost_for_obj, vtype=GRB.BINARY, name=<span class="hljs-string">&#x27;y&#x27;</span>)<br><br><span class="hljs-comment">### Add constraints</span><br><span class="hljs-comment"># For constranits (1) and (2)</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset:<br>    <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset:<br>        <span class="hljs-keyword">if</span> t == <span class="hljs-number">0</span>:<br>            m.addConstr(sinit[i] + x[i,t] == dem[i,t] + s[i,t])<br>        <span class="hljs-keyword">else</span>:<br>            m.addConstr(s[i,t-<span class="hljs-number">1</span>] + x[i,t] == dem[i,t] + s[i,t])<br><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset:<br>    m.addConstr(s[i,T-<span class="hljs-number">1</span>] == sfin)<br><br><span class="hljs-comment"># For the constraint (3)</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset:<br>    <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset:<br>        m.addConstr(x[i,t] &lt;= M[i,t]*y[i,t])<br><br><span class="hljs-comment"># For the constraint (4)</span><br><span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset:<br>    m.addConstr(<span class="hljs-built_in">sum</span>([alpha[i]*x[i,t]+beta[i]*y[i,t] <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset]) &lt;= cap)<br><br><span class="hljs-comment"># For the constraint (5)</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> Iset:<br>    <span class="hljs-keyword">for</span> t <span class="hljs-keyword">in</span> Tset:<br>        m.addConstr(x[i,t] &gt;= <span class="hljs-number">0</span>)<br>        m.addConstr(s[i,t] &gt;= <span class="hljs-number">0</span>)<br><br><span class="hljs-comment">### Optimize the model</span><br>m.Params.timelimit = <span class="hljs-number">120.0</span> <span class="hljs-comment"># Set a time limit</span><br>m.optimize()<br></code></pre></td></tr></table></figure>
+
+<h2 id="Results"><a href="#Results" class="headerlink" title="Results"></a>Results</h2><p><img src="https://dbyuan.s3.amazonaws.com/1-1.png" srcset="/img/loading.gif" lazyload width="100%" height="100%"></img></p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Everything-About-Data/" class="category-chain-item">Everything About Data</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Optimization/">#Optimization</a>
+      
+        <a href="/tags/Python/">#Python</a>
+      
+    </div>
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/04/16/3_matplotlib_example/" title="Notes: Creating Different Types of Plots Using Matplotlib">
+                        <span class="hidden-mobile">Notes: Creating Different Types of Plots Using Matplotlib</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+      Copyright © 2022 Dunbang Yuan | Powered by  <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> | Theme by <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        MathJax = {
+          tex    : {
+            inlineMath: { '[+]': [['$', '$']] }
+          },
+          loader : {
+            load: ['ui/lazy']
+          },
+          options: {
+            renderActions: {
+              findScript    : [10, doc => {
+                document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                  const display = !!node.type.match(/; *mode=display/);
+                  const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                  const text = document.createTextNode('');
+                  node.parentNode.replaceChild(text, node);
+                  math.start = { node: text, delim: '', n: 0 };
+                  math.end = { node: text, delim: '', n: 0 };
+                  doc.math.push(math);
+                });
+              }, '', false],
+              insertedScript: [200, () => {
+                document.querySelectorAll('mjx-container').forEach(node => {
+                  let target = node.parentNode;
+                  if (target.nodeName.toLowerCase() === 'li') {
+                    target.parentNode.classList.add('has-jax');
+                  }
+                });
+              }, '', false]
+            }
+          }
+        };
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
